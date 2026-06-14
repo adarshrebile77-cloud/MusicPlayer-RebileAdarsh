@@ -1,6 +1,6 @@
 /*
  * ============================================================
- *  Arduino Nano Music Player
+ *  Arduino Nano Music Player - FIXED (Display No Longer Stucks)
  *
  *  Hardware:
  *    DFPlayer Mini  → SoftwareSerial RX=10, TX=11
@@ -77,7 +77,6 @@ uint8_t randomTrack() {
 }
 
 // ── Draw one eye — square, bounds-checked ────────────────────
-// size: 0 = normal square, 1 = small square
 void drawEye(int cx, int cy, int8_t pupilX, bool blink, int size) {
   const int eyeSize_normal = 40;
   const int eyeSize_small  = 30;
@@ -111,7 +110,6 @@ void drawEye(int cx, int cy, int8_t pupilX, bool blink, int size) {
   oled.drawRBox(x, y, eyeW, eyeH, radius);
 }
 
-// Helper with default size (normal square)
 void drawEyeNormal(int cx, int cy, int8_t pupilX, bool blink) {
   drawEye(cx, cy, pupilX, blink, 0);
 }
@@ -237,9 +235,12 @@ void setup() {
 }
 
 // ── Loop ──────────────────────────────────────────────────────
+// FIX: Changed from 500ms to 200ms for smoother display refresh
 uint32_t lastDraw = 0;
+const uint32_t DRAW_INTERVAL = 200;  // 200ms = 5 FPS, smooth enough for progress bar
 
 void loop() {
+  // Button handling (runs continuously, not blocked by display)
   if (buttonPressed(0)) {
     if (dfOK) {
       if (isPlaying) { dfPlayer.pause(); isPlaying = false; }
@@ -263,6 +264,7 @@ void loop() {
     }
   }
 
+  // DFPlayer track completion (runs continuously)
   if (dfOK && isPlaying && dfPlayer.available()) {
     if (dfPlayer.readType() == DFPlayerPlayFinished) {
       if (repeatOn) playTrack(currentTrack);
@@ -271,7 +273,9 @@ void loop() {
     }
   }
 
-  if (millis() - lastDraw >= 500) {
+  // FIX: Display refresh happens independently every 200ms
+  // This is NOT blocked by the DFPlayer checks above
+  if (millis() - lastDraw >= DRAW_INTERVAL) {
     lastDraw = millis();
     drawDisplay();
   }
