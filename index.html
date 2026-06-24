@@ -2,271 +2,706 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arduino Nano Music Player — Rebile Adarsh</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#05070a; --surface:#0d1117; --surface2:#161b22;
-  --border:#2a3547; --border2:#3d4961;
-  --accent:#00e5ff; --accent2:#00ff88;
-  --text:#f0f6fc; --text2:#c9d1d9; --muted:#8b94a8;
-  --gradient1:linear-gradient(135deg,#00e5ff 0%,#00ff88 50%,#a855f7 100%);
-  --nav-h:76px;
+:root {
+  --bg: #F3F2EF;
+  --surface: #FFFFFF;
+  --surface2: #FAFAFA;
+  --border: rgba(0, 0, 0, 0.08);
+  --border2: rgba(0, 0, 0, 0.15);
+  --accent: #0A66C2;
+  --accent-hover: #004182;
+  --accent-light: #E8F4FD;
+  --success: #057642;
+  --text: rgba(0, 0, 0, 0.9);
+  --text2: rgba(0, 0, 0, 0.75);
+  --muted: rgba(0, 0, 0, 0.6);
+  --nav-h: 52px;
+  --radius: 8px;
+  --card-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --wrap-x: clamp(16px, 3vw, 32px);
+  --section-y: clamp(20px, 3vw, 36px);
+  --max-w: 1120px;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-html{
-  scroll-behavior:smooth;
-  -webkit-text-size-adjust:100%;
-  scroll-padding-top:56px;
-}
-body{
-  background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
-  overflow-x:hidden; line-height:1.6; max-width:100vw;
-}
-img,canvas,svg,video{max-width:100%;height:auto}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-td,th{overflow-wrap:anywhere}
-a,button{touch-action:manipulation}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-.navbar{
-  position:fixed; top:0; left:0; right:0; z-index:999;
-  background:rgba(13,17,23,0.92); backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border); box-shadow:0 8px 30px rgba(0,0,0,0.35);
-}
-.nav-inner{
-  max-width:1300px; margin:0 auto; padding:14px 24px;
-  display:flex; align-items:center; justify-content:space-between; gap:20px; position:relative;
-}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);min-width:0}
-.brand-badge{
-  width:38px;height:38px;border-radius:12px;background:var(--gradient1);
-  display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;
-  box-shadow:0 0 24px rgba(0,229,255,0.25);flex-shrink:0;
-}
-.brand-text{font-family:'Roboto',sans-serif;font-weight:800;letter-spacing:.3px;white-space:nowrap}
-.nav-links{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.nav-links a{
-  color:var(--text2);text-decoration:none;font-family:'Roboto Mono',monospace;
-  font-size:11px;letter-spacing:1.2px;padding:10px 14px;border:1px solid transparent;
-  border-radius:10px;transition:all .25s;background:transparent;text-transform:uppercase;
-}
-.nav-links a:hover{color:var(--accent);border-color:var(--border);background:rgba(0,229,255,.06)}
-.nav-links a.cta{color:#000;background:var(--gradient1);font-weight:800;border-color:var(--accent)}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.hamburger{
-  display:none;align-items:center;justify-content:center;width:46px;height:46px;
-  border-radius:12px;border:1px solid var(--border);background:var(--surface2);
-  color:var(--text);cursor:pointer;font-size:18px;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 12px);
+  -webkit-text-size-adjust: 100%;
 }
-.hamburger:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.08)}
 
-.mobile-menu{
-  position:absolute;top:100%;left:0;right:0;background:rgba(13,17,23,.98);
-  border-bottom:1px solid var(--border);padding:14px 16px 18px;box-shadow:0 18px 32px rgba(0,0,0,.35);
+body {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
-.mobile-menu[hidden]{display:none}
-.mobile-menu a{
-  display:block;text-decoration:none;color:var(--text2);font-family:'Roboto Mono',monospace;
-  font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:14px 12px;
-  border:1px solid var(--border);border-radius:10px;margin-top:10px;background:rgba(255,255,255,.02);
-}
-.mobile-menu a:hover{color:var(--accent);background:rgba(0,229,255,.06)}
 
-.hero{
-  display:grid;
-  grid-template-columns:1.08fr .92fr;
-  min-height:100vh;
-  position:relative;
-  align-items:stretch;
-}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(0,229,255,.08) 0%,transparent 50%);pointer-events:none}
-.hero-left{
-  display:flex;flex-direction:column;justify-content:center;padding:50px 70px;border-right:1px solid var(--border);
-  position:relative;z-index:2;min-width:0
-}
-.hero-right{
-  position:relative;
-  background:linear-gradient(180deg,#080c12 0%,#04070c 100%);
-  overflow:hidden;
-  min-height:100vh;
-}
-#three-canvas{width:100%;height:100%;display:block;cursor:grab}
-#three-canvas:active{cursor:grabbing}
-.canvas-hint{
-  position:absolute;
-  bottom:28px;
-  left:16px;
-  right:16px;
-  text-align:center;
-  font-family:'Roboto Mono',monospace;
-  font-size:11px;
-  color:var(--muted);
-  letter-spacing:1.5px;
-  pointer-events:none;
-  background:linear-gradient(90deg,transparent 0%,rgba(4,7,12,.94) 15%,rgba(4,7,12,.94) 85%,transparent 100%);
-  padding:12px 0;
-  border-radius:8px;
-  z-index:3;
-}
-.zoom-controls{position:absolute;top:20px;right:20px;display:flex;gap:10px}
-.zoom-btn{
-  width:48px;height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface2);
-  color:var(--muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-.zoom-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.12)}
+img, svg, video { max-width: 100%; height: auto; display: block; }
+table { width: 100%; border-collapse: collapse; }
+td, th { overflow-wrap: anywhere; word-break: break-word; }
+a, button { touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.divider{height:1px;background:linear-gradient(to right,transparent,var(--border) 20%,var(--border2) 50%,var(--border) 80%,transparent);position:relative}
-.divider::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:1px;background:var(--accent);box-shadow:0 0 10px var(--accent)}
-.wrap{max-width:1300px;margin:0 auto;padding:60px 56px;position:relative;min-width:0}
-#features,#hardware,#source,#footer{scroll-margin-top:18px}
-.slabel{
-  font-family:'Roboto Mono',monospace;font-size:11px;letter-spacing:5px;color:var(--accent);margin-bottom:12px;
-  font-weight:700;display:flex;align-items:center;gap:10px;text-transform:uppercase;min-width:0
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
-.slabel::after{content:'';height:1px;background:var(--gradient1);flex:1;margin-left:16px;opacity:.6}
-h1{
-  font-family:'Roboto',sans-serif;font-size:clamp(40px,6vw,72px);font-weight:900;line-height:1.05;color:#fff;
-  margin-bottom:20px;letter-spacing:-2px;word-break:break-word
-}
-h1 span{background:var(--gradient1);background-clip:text;-webkit-background-clip:text;color:transparent}
-h2{
-  font-family:'Roboto',sans-serif;font-size:clamp(28px,4vw,40px);font-weight:800;margin-bottom:40px;letter-spacing:-1px;
-  background:var(--gradient1);background-clip:text;-webkit-background-clip:text;color:transparent;word-break:break-word
-}
-.tag{
-  font-family:'Roboto Mono',monospace;font-size:11px;letter-spacing:4px;color:rgba(0,229,255,.6);margin-bottom:20px;font-weight:600;
-  text-transform:uppercase;display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(0,229,255,.08);
-  border:1px solid rgba(0,229,255,.25);border-radius:8px;max-width:100%
-}
-.subtitle{font-size:17px;color:var(--text2);line-height:1.9;max-width:450px;margin-bottom:30px;font-weight:400;overflow-wrap:anywhere}
 
-.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.fcell{background:var(--surface2);padding:44px 32px;min-width:0}
-.ficon{font-size:32px;margin-bottom:20px;color:var(--accent)}
-.ftitle{font-family:'Roboto',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;text-transform:uppercase}
-.fdesc{font-size:15px;color:var(--muted);line-height:1.8}
+/* ── NAVBAR ── */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 999;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
 
-.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;min-width:0}
-.wcard{background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:0}
-.whead{
-  padding:18px 24px;background:var(--surface);border-bottom:1px solid var(--border);
-  font-family:'Roboto',sans-serif;font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;
+.nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  min-height: var(--nav-h);
+  padding: 0 var(--wrap-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-th{
-  font-family:'Roboto Mono',monospace;font-size:11px;letter-spacing:.8px;color:var(--muted);padding:14px 20px;text-align:left;
-  border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);font-weight:700;text-transform:uppercase
-}
-td{font-family:'Roboto Mono',monospace;font-size:13px;padding:14px 20px;border-bottom:1px solid rgba(42,49,64,.35);color:var(--text2);font-weight:600}
 
-.source-shell{
-  position:relative;
-  padding:18px;
-  border-radius:28px;
-  background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(0,255,136,.05) 35%,rgba(168,85,247,.08));
-  border:1px solid rgba(0,229,255,.18);
-  box-shadow:0 24px 70px rgba(0,0,0,.4);
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  min-width: 0;
+  flex-shrink: 0;
 }
-.source-shell::before{
-  content:'';
-  position:absolute;
-  inset:10px;
-  border-radius:22px;
-  border:1px solid rgba(255,255,255,.04);
-  pointer-events:none
-}
-.source-card{
-  display:flex;align-items:center;gap:26px;padding:34px;border-radius:22px;border:1px solid rgba(0,229,255,.22);
-  background:
-    radial-gradient(circle at top right,rgba(0,229,255,.12),transparent 42%),
-    linear-gradient(180deg,rgba(22,27,34,.98),rgba(13,17,23,.96));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 45px rgba(0,0,0,.35);
-  position:relative;overflow:hidden;min-width:0
-}
-.source-card::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(115deg,transparent 0%,rgba(0,229,255,.08) 50%,transparent 100%);
-  opacity:.45;
-  pointer-events:none
-}
-.source-icon{
-  width:84px;height:84px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:34px;color:#000;
-  background:var(--gradient1);box-shadow:0 0 28px rgba(0,229,255,.18);flex-shrink:0;position:relative;z-index:1
-}
-.source-content{position:relative;z-index:1}
-.source-kicker{
-  font-family:'Roboto Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent);margin-bottom:10px;
-  text-transform:uppercase;font-weight:700
-}
-.source-content h3{
-  font-family:'Roboto',sans-serif;font-size:28px;color:var(--text);margin-bottom:10px;letter-spacing:-.5px
-}
-.source-content p{
-  color:var(--muted);margin-bottom:22px;max-width:720px;line-height:1.9;font-size:15px
-}
-.source-actions{display:flex;flex-wrap:wrap;gap:14px}
 
-footer{
-  border-top:1px solid var(--border);padding:50px 56px;display:flex;align-items:center;justify-content:space-between;
-  background:var(--surface2);flex-wrap:wrap;gap:24px;min-width:0
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
 }
-.fname{font-family:'Roboto',sans-serif;font-size:18px;font-weight:800;color:var(--accent);margin-bottom:8px}
-.fsub{font-family:'Roboto Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:.8px;font-weight:600}
-.fcontact{font-family:'Roboto Mono',monospace;font-size:13px;color:var(--muted);line-height:2.4;text-align:right;font-weight:600}
-.fcontact i{margin-right:8px;color:var(--accent);width:16px}
-a.mail-link,a.portfolio-link{color:var(--accent);text-decoration:none}
 
-.pbtn{
-  font-family:'Roboto Mono',monospace;font-size:11px;letter-spacing:.8px;padding:14px 24px;border:1px solid var(--border);
-  background:var(--surface);color:var(--muted);border-radius:12px;cursor:pointer;transition:all .3s;text-transform:uppercase;
-  font-weight:700;display:flex;align-items:center;gap:10px;text-decoration:none
+.brand-text {
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.pbtn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.08);transform:translateY(-3px)}
-.pbtn.pri{background:var(--gradient1);color:#000;border-color:var(--accent);font-weight:800}
-.pbtn.ton{border-color:var(--accent2);color:var(--accent2);background:rgba(0,255,136,.08)}
 
-.reveal{opacity:0;transform:translateY(32px);transition:opacity .8s ease,transform .8s ease}
-.reveal.vis{opacity:1;transform:none}
-
-@media(max-width:900px){
-  .hero{grid-template-columns:1fr}
-  .hero-left{padding:40px 32px;border-right:none;border-bottom:1px solid var(--border)}
-  .hero-right{height:420px;min-height:420px}
-  .wrap{padding:40px 28px}
-  .fgrid{grid-template-columns:1fr 1fr}
-  .wgrid{grid-template-columns:1fr}
-  footer{flex-direction:column;align-items:flex-start;padding:40px 28px}
-  .fcontact{text-align:left}
-  .source-card{flex-direction:column;align-items:flex-start}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
-@media(max-width:560px){
-  body{padding-top:0}
-  .nav-inner{padding:10px 14px}
-  .brand-text{font-size:13px;white-space:normal}
-  .nav-links{display:none}
-  .hamburger{display:flex}
-  .hero-left{padding:24px 16px}
-  .hero-right{height:320px;min-height:320px}
-  h1{font-size:34px;margin-bottom:14px;line-height:1.02}
-  .subtitle{font-size:14px;margin-bottom:20px;max-width:100%}
-  .tag{font-size:10px;letter-spacing:2px;padding:7px 10px}
-  .wrap{padding:28px 16px}
-  h2{font-size:22px;margin-bottom:24px}
-  .fgrid{grid-template-columns:1fr}
-  .fcell{padding:28px 20px}
-  .wgrid{grid-template-columns:1fr}
-  th,td{padding:10px 12px;font-size:11px}
-  .source-content h3{font-size:18px}
-  .source-card{padding:20px}
-  footer{padding:28px 16px}
-  .canvas-hint{font-size:10px;padding:10px 0}
-  .zoom-controls{top:12px;right:12px}
-  .zoom-btn{width:40px;height:40px;font-size:16px}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.nav-links a.cta {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 24px;
+  padding: 6px 16px;
+}
+
+.nav-links a.cta:hover {
+  background: var(--accent-light);
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  top: var(--nav-h);
+  left: 0; right: 0;
+  z-index: 998;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px var(--wrap-x) 16px;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--card-shadow);
+  transform: translateY(-6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-drawer.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.mobile-drawer a {
+  color: var(--text2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-drawer a:hover,
+.mobile-drawer a:focus {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--accent);
+}
+
+.mobile-drawer a.cta {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 24px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding-top: var(--nav-h);
+  background: var(--bg);
+}
+
+.hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) var(--wrap-x);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 48px);
+  align-items: center;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid rgba(10, 102, 194, 0.2);
+  padding: 6px 12px;
+  border-radius: 24px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: clamp(0.95rem, 2vw, 1.125rem);
+  color: var(--text2);
+  line-height: 1.65;
+  max-width: 520px;
+  margin-bottom: 24px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: clamp(20px, 3vw, 28px);
+  min-width: 0;
+}
+
+.hero-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 6px 12px;
+  border-radius: 24px;
+  margin-bottom: 16px;
+}
+
+.hero-card h2 {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-card h2 i { color: var(--muted); font-size: 0.9em; }
+
+.hero-card .subtitle {
+  max-width: none;
+  margin-bottom: 0;
+  font-size: 15px;
+}
+
+.hero-spec {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.spec {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-width: 0;
+}
+
+.spec h4 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.spec p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── SECTIONS ── */
+.section {
+  max-width: var(--max-w);
+  margin: 0 auto var(--section-y);
+  padding: 0 var(--wrap-x);
+  min-width: 0;
+}
+
+.section-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: clamp(20px, 3vw, 28px);
+  min-width: 0;
+}
+
+.slabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+h2.section-title {
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+h2.section-title i { color: var(--muted); }
+
+/* ── FEATURES ── */
+.fgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.fcell {
+  background: var(--surface);
+  padding: 20px 18px;
+  min-width: 0;
+}
+
+.ficon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.ftitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.fdesc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+/* ── HARDWARE ── */
+.wgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.wcard {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.whead {
+  padding: 14px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.whead i { color: var(--muted); }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+td {
+  font-size: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  font-weight: 500;
+}
+
+tr:last-child td { border-bottom: none; }
+
+.tag-green { color: var(--success); font-weight: 600; }
+.tag-blue { color: var(--accent); font-weight: 600; }
+
+/* ── SOURCE ── */
+.source-card {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 3vw, 24px);
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface2);
+  min-width: 0;
+}
+
+.source-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+  background: #24292F;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.source-content { min-width: 0; flex: 1; }
+
+.source-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.source-content h3 {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.source-content p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-light);
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* ── FOOTER ── */
+footer {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 28px var(--wrap-x) 40px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+
+.fname {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.fsub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.fcontact {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 2;
+  text-align: right;
+}
+
+.fcontact i {
+  margin-right: 8px;
+  color: var(--accent);
+  width: 16px;
+  text-align: center;
+}
+
+.fcontact a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.fcontact a:hover { text-decoration: underline; }
+
+#features, #hardware, #source, #footer {
+  scroll-margin-top: calc(var(--nav-h) + 16px);
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .fgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wgrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .mobile-drawer { display: flex; }
+
+  .hero-inner {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .fgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .source-card {
+    flex-direction: column;
+  }
+
+  footer {
+    flex-direction: column;
+  }
+
+  .fcontact {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-text { font-size: 0.8rem; }
+  .brand-icon { width: 32px; height: 32px; font-size: 14px; }
+
+  .hero-spec {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions .btn,
+  .source-actions .btn {
+    width: 100%;
+  }
+
+  th, td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-text { display: none; }
 }
 </style>
 </head>
@@ -275,348 +710,222 @@ a.mail-link,a.portfolio-link{color:var(--accent);text-decoration:none}
 <nav class="navbar" aria-label="Main navigation">
   <div class="nav-inner">
     <a class="brand" href="#top">
-      <div class="brand-badge">A</div>
+      <div class="brand-icon"><i class="fas fa-music" aria-hidden="true"></i></div>
       <div class="brand-text">Arduino Music Player</div>
     </a>
-    <div class="nav-links" id="desktopNav">
+
+    <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#hardware">Hardware</a>
       <a href="#source">Source</a>
       <a href="#footer">Contact</a>
       <a class="cta" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer">Repository</a>
     </div>
-    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" aria-haspopup="true">
-      <i class="fas fa-bars" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="mobile-menu" id="mobileMenu" hidden>
-    <a href="#features">Features</a>
-    <a href="#hardware">Hardware</a>
-    <a href="#source">Source</a>
-    <a href="#footer">Contact</a>
-    <a href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer">Repository</a>
+
+    <div class="nav-actions">
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </nav>
 
-<div id="top" class="hero">
-  <div class="hero-left">
-    <div class="tag"><i class="fas fa-microchip"></i> PROJECT BY — REBILE ADARSH</div>
-    <h1>Arduino<br><span>Music</span><br>Player</h1>
-    <p class="subtitle">A feature-rich portable music player built on Arduino Nano with DFPlayer Mini audio decoding, SH1106 OLED display and 5-button control system.</p>
-  </div>
-  <div class="hero-right">
-    <canvas id="three-canvas"></canvas>
-    <div class="canvas-hint"><i class="fas fa-hand-pointer"></i> DRAG TO ROTATE · USE BUTTONS TO ZOOM</div>
-    <div class="zoom-controls">
-      <button class="zoom-btn" id="zoom-in" type="button" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
-      <button class="zoom-btn" id="zoom-out" type="button" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
-    </div>
-  </div>
+<div class="mobile-drawer" id="mobileDrawer" role="navigation" aria-label="Mobile navigation">
+  <a href="#features"><i class="fas fa-star fa-fw"></i> Features</a>
+  <a href="#hardware"><i class="fas fa-plug fa-fw"></i> Hardware</a>
+  <a href="#source"><i class="fas fa-code fa-fw"></i> Source</a>
+  <a href="#footer"><i class="fas fa-envelope fa-fw"></i> Contact</a>
+  <a class="cta" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer"><i class="fab fa-github fa-fw"></i> GitHub Repository</a>
 </div>
 
-<div class="divider"></div>
-
-<div id="features" class="wrap reveal">
-  <div class="slabel"><i class="fas fa-star"></i> Capabilities</div>
-  <h2><i class="fas fa-lightbulb"></i> Key Features</h2>
-  <div class="fgrid">
-    <div class="fcell"><div class="ficon"><i class="fas fa-play-circle"></i></div><div class="ftitle">Play / Pause</div><div class="fdesc">First press plays Track 1. Subsequent presses toggle playback state via DFPlayer hardware command.</div></div>
-    <div class="fcell"><div class="ficon"><i class="fas fa-random"></i></div><div class="ftitle">Shuffle Mode</div><div class="fdesc">Next/Prev picks a random track. Avoids replaying the same track twice consecutively.</div></div>
-    <div class="fcell"><div class="ficon"><i class="fas fa-redo"></i></div><div class="ftitle">Repeat Mode</div><div class="fdesc">Loops current track forever using DFPlayer's hardware loop — zero CPU overhead.</div></div>
-    <div class="fcell"><div class="ficon"><i class="fas fa-desktop"></i></div><div class="ftitle">OLED Display</div><div class="fdesc">SH1106 128×64 in page-buffer mode. Track number, play state, shuffle/repeat and progress bar.</div></div>
-    <div class="fcell"><div class="ficon"><i class="fas fa-shield-alt"></i></div><div class="ftitle">Safe Boot Flag</div><div class="fdesc">dfOK guard prevents garbage serial commands when DFPlayer absent. No fake PLAYING state.</div></div>
-    <div class="fcell"><div class="ficon"><i class="fas fa-eye"></i></div><div class="ftitle">Eye Animation</div><div class="fdesc">Robot eyes shift left, right, then blink on boot, followed by a full system checklist screen.</div></div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<div id="hardware" class="wrap reveal">
-  <div class="slabel"><i class="fas fa-plug"></i> Hardware</div>
-  <h2><i class="fas fa-sitemap"></i> Wiring Reference</h2>
-  <div class="wgrid">
-    <div class="wcard">
-      <div class="whead"><i class="fas fa-desktop"></i> OLED — SH1106 1.3"</div>
-      <table>
-        <tr><th>OLED Pin</th><th>Nano Pin</th></tr>
-        <tr><td>VCC</td><td>3.3V or 5V</td></tr>
-        <tr><td>GND</td><td>GND</td></tr>
-        <tr><td>SDA</td><td>A4</td></tr>
-        <tr><td>SCL</td><td>A5</td></tr>
-      </table>
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag"><i class="fas fa-microchip"></i> Project by Rebile Adarsh</div>
+      <h1>Arduino Nano Music Player</h1>
+      <p class="subtitle">A feature-rich portable music player built on Arduino Nano with DFPlayer Mini audio decoding, SH1106 OLED display and 5-button control system.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> View Repository</a>
+        <a class="btn btn-secondary" href="#features">Explore Features</a>
+      </div>
     </div>
-    <div class="wcard">
-      <div class="whead"><i class="fas fa-play"></i> DFPlayer Mini</div>
-      <table>
-        <tr><th>DFP Pin</th><th>Nano Pin</th></tr>
-        <tr><td>VCC</td><td>5V only</td></tr>
-        <tr><td>GND</td><td>GND</td></tr>
-        <tr><td>TX</td><td>D10 (RX)</td></tr>
-        <tr><td>RX</td><td>D11 + 1KΩ</td></tr>
-      </table>
-    </div>
-    <div class="wcard">
-      <div class="whead"><i class="fas fa-hand-pointer"></i> Push Buttons ×5</div>
-      <table>
-        <tr><th>Button</th><th>Nano Pin</th><th>Pull-up</th></tr>
-        <tr><td>Play / Pause</td><td>D2</td><td style="color:var(--accent2);font-weight:700;">Internal</td></tr>
-        <tr><td>Next Track</td><td>D3</td><td style="color:var(--accent2);font-weight:700;">Internal</td></tr>
-        <tr><td>Prev Track</td><td>D4</td><td style="color:var(--accent2);font-weight:700;">Internal</td></tr>
-        <tr><td>Shuffle</td><td>D5</td><td style="color:var(--accent2);font-weight:700;">Internal</td></tr>
-        <tr><td>Repeat</td><td>D6</td><td style="color:var(--accent2);font-weight:700;">Internal</td></tr>
-      </table>
-    </div>
-    <div class="wcard">
-      <div class="whead"><i class="fas fa-book"></i> Required Libraries</div>
-      <table>
-        <tr><th>Library</th><th>Source</th></tr>
-        <tr><td>DFRobotDFPlayerMini</td><td style="color:var(--accent);font-weight:700;">Library Manager</td></tr>
-        <tr><td>U8g2</td><td style="color:var(--accent);font-weight:700;">Library Manager</td></tr>
-        <tr><td>SoftwareSerial</td><td style="color:var(--muted);font-weight:600;">Built-in</td></tr>
-        <tr><td>Wire</td><td style="color:var(--muted);font-weight:600;">Built-in</td></tr>
-      </table>
+
+    <div class="hero-card">
+      <div class="hero-card-label"><i class="fas fa-music"></i> Portable Audio System</div>
+      <h2><i class="fas fa-circle-info"></i> Project Overview</h2>
+      <p class="subtitle">This build combines Arduino Nano, DFPlayer Mini, and SH1106 OLED into a compact music player with tactile button control.</p>
+      <div class="hero-spec">
+        <div class="spec"><h4>Controller</h4><p>Arduino Nano</p></div>
+        <div class="spec"><h4>Audio</h4><p>DFPlayer Mini</p></div>
+        <div class="spec"><h4>Display</h4><p>SH1106 OLED</p></div>
+        <div class="spec"><h4>Input</h4><p>5 Push Buttons</p></div>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="divider"></div>
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-card">
+    <div class="slabel">Capabilities</div>
+    <h2 class="section-title"><i class="fas fa-lightbulb"></i> Key Features</h2>
+    <div class="fgrid">
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-play-circle"></i></div>
+        <div class="ftitle">Play / Pause</div>
+        <div class="fdesc">First press plays Track 1. Subsequent presses toggle playback state via DFPlayer hardware command.</div>
+      </div>
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-random"></i></div>
+        <div class="ftitle">Shuffle Mode</div>
+        <div class="fdesc">Next/Prev picks a random track. Avoids replaying the same track twice consecutively.</div>
+      </div>
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-redo"></i></div>
+        <div class="ftitle">Repeat Mode</div>
+        <div class="fdesc">Loops current track forever using DFPlayer's hardware loop — zero CPU overhead.</div>
+      </div>
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-desktop"></i></div>
+        <div class="ftitle">OLED Display</div>
+        <div class="fdesc">SH1106 128×64 in page-buffer mode. Track number, play state, shuffle/repeat and progress bar.</div>
+      </div>
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-shield-alt"></i></div>
+        <div class="ftitle">Safe Boot Flag</div>
+        <div class="fdesc">dfOK guard prevents garbage serial commands when DFPlayer absent. No fake PLAYING state.</div>
+      </div>
+      <div class="fcell">
+        <div class="ficon"><i class="fas fa-eye"></i></div>
+        <div class="ftitle">Eye Animation</div>
+        <div class="fdesc">Robot eyes shift left, right, then blink on boot, followed by a full system checklist screen.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div id="source" class="wrap reveal">
-  <div class="slabel"><i class="fas fa-code"></i> Source</div>
-  <h2><i class="fas fa-folder-open"></i> Source Code</h2>
-  <div class="source-shell">
-    <div class="source-card">
-      <div class="source-icon"><i class="fab fa-github"></i></div>
-      <div class="source-content">
-        <div class="source-kicker">OFFICIAL REPOSITORY</div>
-        <h3>MusicPlayer-RebileAdarsh</h3>
-        <p>Browse the firmware, inspect the build, and download the full project from GitHub.</p>
-        <div class="source-actions">
-          <a class="pbtn ton" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer"><i class="fas fa-code"></i> SOURCE CODE</a>
-          <a class="pbtn" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> DOWNLOAD ZIP</a>
+<!-- HARDWARE -->
+<section class="section" id="hardware">
+  <div class="section-card">
+    <div class="slabel">Hardware</div>
+    <h2 class="section-title"><i class="fas fa-sitemap"></i> Wiring Reference</h2>
+    <div class="wgrid">
+      <div class="wcard">
+        <div class="whead"><i class="fas fa-desktop"></i> OLED — SH1106 1.3"</div>
+        <div class="table-scroll">
+          <table>
+            <tr><th>OLED Pin</th><th>Nano Pin</th></tr>
+            <tr><td>VCC</td><td>3.3V or 5V</td></tr>
+            <tr><td>GND</td><td>GND</td></tr>
+            <tr><td>SDA</td><td>A4</td></tr>
+            <tr><td>SCL</td><td>A5</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="wcard">
+        <div class="whead"><i class="fas fa-play"></i> DFPlayer Mini</div>
+        <div class="table-scroll">
+          <table>
+            <tr><th>DFP Pin</th><th>Nano Pin</th></tr>
+            <tr><td>VCC</td><td>5V only</td></tr>
+            <tr><td>GND</td><td>GND</td></tr>
+            <tr><td>TX</td><td>D10 (RX)</td></tr>
+            <tr><td>RX</td><td>D11 + 1KΩ</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="wcard">
+        <div class="whead"><i class="fas fa-hand-pointer"></i> Push Buttons ×5</div>
+        <div class="table-scroll">
+          <table>
+            <tr><th>Button</th><th>Nano Pin</th><th>Pull-up</th></tr>
+            <tr><td>Play / Pause</td><td>D2</td><td class="tag-green">Internal</td></tr>
+            <tr><td>Next Track</td><td>D3</td><td class="tag-green">Internal</td></tr>
+            <tr><td>Prev Track</td><td>D4</td><td class="tag-green">Internal</td></tr>
+            <tr><td>Shuffle</td><td>D5</td><td class="tag-green">Internal</td></tr>
+            <tr><td>Repeat</td><td>D6</td><td class="tag-green">Internal</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="wcard">
+        <div class="whead"><i class="fas fa-book"></i> Required Libraries</div>
+        <div class="table-scroll">
+          <table>
+            <tr><th>Library</th><th>Source</th></tr>
+            <tr><td>DFRobotDFPlayerMini</td><td class="tag-blue">Library Manager</td></tr>
+            <tr><td>U8g2</td><td class="tag-blue">Library Manager</td></tr>
+            <tr><td>SoftwareSerial</td><td>Built-in</td></tr>
+            <tr><td>Wire</td><td>Built-in</td></tr>
+          </table>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- SOURCE -->
+<section class="section" id="source">
+  <div class="section-card">
+    <div class="slabel">Source</div>
+    <h2 class="section-title"><i class="fas fa-folder-open"></i> Source Code</h2>
+    <div class="source-card">
+      <div class="source-icon"><i class="fab fa-github"></i></div>
+      <div class="source-content">
+        <div class="source-kicker">Official Repository</div>
+        <h3>MusicPlayer-RebileAdarsh</h3>
+        <p>Browse the firmware, inspect the build, and download the full project from GitHub.</p>
+        <div class="source-actions">
+          <a class="btn btn-primary" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer"><i class="fas fa-code"></i> Source Code</a>
+          <a class="btn btn-secondary" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Download ZIP</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <footer id="footer">
   <div>
-    <div class="fname"><i class="fas fa-user-astronaut"></i> Rebile Adarsh</div>
+    <div class="fname"><i class="fas fa-user"></i> Rebile Adarsh</div>
     <div class="fsub">Arduino Nano Music Player · Firmware in Arduino C++</div>
   </div>
   <div class="fcontact">
-    <i class="fas fa-envelope"></i> <a class="mail-link" href="mailto:adarshrebile89@gmail.com">adarshrebile89@gmail.com</a><br>
+    <i class="fas fa-envelope"></i> <a href="mailto:adarshrebile89@gmail.com">adarshrebile89@gmail.com</a><br>
     <i class="fas fa-phone"></i> +91 9076245869<br>
-    <i class="fas fa-globe"></i> <a class="portfolio-link" href="https://portfolio-brxb.onrender.com" target="_blank" rel="noopener noreferrer">portfolio-brxb.onrender.com</a><br>
-    <i class="fas fa-code"></i> <a class="portfolio-link" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer">GitHub Repository</a><br>
-    <i class="fas fa-download"></i> <a class="portfolio-link" href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh/archive/refs/heads/main.zip" target="_blank" rel="noopener noreferrer">Download ZIP</a>
+    <i class="fas fa-globe"></i> <a href="https://portfolio-brxb.onrender.com" target="_blank" rel="noopener noreferrer">portfolio-brxb.onrender.com</a><br>
+    <i class="fas fa-code"></i> <a href="https://github.com/adarshrebile77-cloud/MusicPlayer-RebileAdarsh" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
   </div>
 </footer>
 
 <script>
-(function(){
-  const hamburger = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobileMenu');
-  const links = Array.from(mobileMenu.querySelectorAll('a'));
-  let lastFocus = null;
+(function () {
+  const btn = document.getElementById('hamburger');
+  const drawer = document.getElementById('mobileDrawer');
+  const links = drawer.querySelectorAll('a');
 
-  function openMenu(){
-    lastFocus = document.activeElement;
-    mobileMenu.hidden = false;
-    hamburger.setAttribute('aria-expanded','true');
-    document.addEventListener('keydown', onKeyDown);
-    links[0] && links[0].focus();
+  function close() {
+    btn.classList.remove('open');
+    drawer.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
   }
 
-  function closeMenu(){
-    mobileMenu.hidden = true;
-    hamburger.setAttribute('aria-expanded','false');
-    document.removeEventListener('keydown', onKeyDown);
-    if(lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
-    else hamburger.focus();
-  }
-
-  function onKeyDown(e){
-    if(e.key === 'Escape') closeMenu();
-  }
-
-  hamburger.addEventListener('click', () => {
-    if(mobileMenu.hidden) openMenu();
-    else closeMenu();
+  btn.addEventListener('click', () => {
+    const isOpen = drawer.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
   });
 
-  links.forEach(a => a.addEventListener('click', closeMenu));
+  links.forEach(link => link.addEventListener('click', close));
+
+  document.addEventListener('click', e => {
+    if (!btn.contains(e.target) && !drawer.contains(e.target)) close();
+  });
 
   window.addEventListener('resize', () => {
-    if(window.innerWidth > 560 && !mobileMenu.hidden) closeMenu();
+    if (window.innerWidth > 760) close();
   });
-})();
-</script>
-
-<script>
-(function(){
-  const container = document.querySelector('.hero-right');
-  const canvas = document.getElementById('three-canvas');
-
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x04070c);
-
-  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
-  let cameraDistance = 18;
-
-  scene.add(new THREE.AmbientLight(0x505060, 1));
-  const mainLight = new THREE.DirectionalLight(0xffffff, 2);
-  mainLight.position.set(10, 15, 10);
-  scene.add(mainLight);
-  const fillLight = new THREE.DirectionalLight(0x8899aa, 0.8);
-  fillLight.position.set(-8, 8, -6);
-  scene.add(fillLight);
-
-  const root = new THREE.Group();
-  scene.add(root);
-
-  const M = {
-    breadboard: new THREE.MeshStandardMaterial({color:0xe8e8e0, roughness:0.5, metalness:0.1}),
-    pcbGreen: new THREE.MeshStandardMaterial({color:0x2d6a4f, roughness:0.4, metalness:0.3}),
-    pcbBlue: new THREE.MeshStandardMaterial({color:0x1e3a5f, roughness:0.4, metalness:0.35}),
-    chip: new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.4, metalness:0.7}),
-    gold: new THREE.MeshStandardMaterial({color:0xd4a030, roughness:0.2, metalness:1}),
-    silver: new THREE.MeshStandardMaterial({color:0x888890, roughness:0.2, metalness:1}),
-    black: new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.5, metalness:0.4}),
-    blue: new THREE.MeshStandardMaterial({color:0x0066cc, roughness:0.3, metalness:0.5}),
-    redWire: new THREE.MeshStandardMaterial({color:0xdc2f2f, roughness:0.5, metalness:0.1}),
-    blackWire: new THREE.MeshStandardMaterial({color:0x1a1a1a, roughness:0.6, metalness:0.1}),
-    yellowWire: new THREE.MeshStandardMaterial({color:0xd4a01f, roughness:0.5, metalness:0.1}),
-    cyanWire: new THREE.MeshStandardMaterial({color:0x00aadd, roughness:0.5, metalness:0.1}),
-    greenWire: new THREE.MeshStandardMaterial({color:0x1f8a3f, roughness:0.5, metalness:0.1}),
-  };
-
-  function box(w,h,d,mat,x,y,z){
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
-    mesh.position.set(x,y,z); mesh.castShadow = true; mesh.receiveShadow = true; root.add(mesh); return mesh;
-  }
-  function cyl(r,h,mat,x,y,z){
-    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,12), mat);
-    mesh.position.set(x,y,z); mesh.castShadow = true; mesh.receiveShadow = true; root.add(mesh); return mesh;
-  }
-
-  box(14, 0.5, 10, M.breadboard, 0, 0, 0);
-  const nx = -3.5;
-  box(2.4, 0.18, 4.2, M.pcbGreen, nx, 0.5, 0);
-  box(0.6, 0.36, 2.2, M.silver, nx, 0.68, -1.9);
-  box(1.2, 0.16, 1.4, M.chip, nx, 0.66, 0.4);
-  for(let pin=-1.8; pin<=1.8; pin+=0.3){
-    cyl(0.05,0.18,M.gold,nx-1.28,0.5,pin);
-    cyl(0.05,0.18,M.gold,nx+1.28,0.5,pin);
-  }
-
-  const dx = 3;
-  box(2.2, 0.16, 3.2, M.pcbBlue, dx, 0.5, 0);
-  box(1.4, 0.2, 1.2, M.chip, dx, 0.68, 0.7);
-  box(0.5, 0.24, 0.9, M.silver, dx, 0.68, -1.2);
-  for(let dpin=-1.4; dpin<=1.4; dpin+=0.4){
-    cyl(0.04,0.16,M.gold,dx-1.25,0.5,dpin);
-    cyl(0.04,0.16,M.gold,dx+1.25,0.5,dpin);
-  }
-
-  const ox = 3, oz = 3.8;
-  box(1.4, 0.14, 1.4, M.pcbGreen, ox, 0.5, oz);
-  box(1.2, 0.12, 1.2, M.black, ox, 0.58, oz);
-  box(1.05, 0.08, 1.05, M.blue, ox, 0.64, oz);
-  for(let opin=-0.55; opin<=0.55; opin+=0.37){
-    cyl(0.035,0.14,M.gold,ox-0.7,0.5,oz+opin);
-    cyl(0.035,0.14,M.gold,ox+0.7,0.5,oz+opin);
-  }
-
-  const bz = -4;
-  [-3.2,-1.6,0,1.6,3.2].forEach(bx => {
-    box(0.5,0.25,0.5,M.black,bx,0.6,bz);
-    cyl(0.2,0.12,M.blue,bx,0.78,bz);
-  });
-
-  function curvedWire(points, mat){
-    const curve = new THREE.CurvePath();
-    for(let i=0;i<points.length-1;i++){
-      curve.add(new THREE.LineCurve3(
-        new THREE.Vector3(points[i][0],points[i][1],points[i][2]),
-        new THREE.Vector3(points[i+1][0],points[i+1][1],points[i+1][2])
-      ));
-    }
-    const geo = new THREE.TubeGeometry(curve, 15, 0.06, 8, false);
-    const wire = new THREE.Mesh(geo, mat);
-    wire.castShadow = true;
-    root.add(wire);
-  }
-
-  curvedWire([[-2.3,0.65,0],[-0.5,0.85,0],[1.5,0.85,0],[2.2,0.65,0]], M.redWire);
-  curvedWire([[-2.3,0.65,0.4],[-0.3,0.85,0.3],[1.6,0.85,0.2],[2.2,0.65,0.25]], M.blackWire);
-  curvedWire([[-2.0,0.65,-1],[-0.5,0.8,0],[1.8,0.8,0.4],[2.2,0.65,0.55]], M.cyanWire);
-  curvedWire([[-1.8,0.65,-0.5],[-0.3,0.78,0],[1.7,0.78,0.4],[2.2,0.65,0.7]], M.yellowWire);
-  curvedWire([[-1.8,0.65,0],[-0.2,0.78,1],[1.8,0.78,2.8],[2.2,0.65,3.8]], M.greenWire);
-
-  let targetRotX = 0.25, targetRotY = 0.35, currentRotX = 0.25, currentRotY = 0.35;
-  let dragging = false, lastX = 0, lastY = 0;
-  const minZoom = 12, maxZoom = 30;
-
-  function resizeCanvas(){
-    const rect = container.getBoundingClientRect();
-    const w = Math.max(1, Math.floor(rect.width));
-    const h = Math.max(1, Math.floor(rect.height));
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  resizeCanvas();
-
-  const ro = new ResizeObserver(resizeCanvas);
-  ro.observe(container);
-
-  canvas.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
-  window.addEventListener('mouseup', () => { dragging = false; });
-  canvas.addEventListener('mousemove', e => {
-    if(!dragging) return;
-    targetRotY += (e.clientX - lastX) * 0.008;
-    targetRotX = Math.max(0.1, Math.min(0.5, targetRotX + (e.clientY - lastY) * 0.005));
-    lastX = e.clientX; lastY = e.clientY;
-  });
-  canvas.addEventListener('touchstart', e => { dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }, {passive:true});
-  canvas.addEventListener('touchmove', e => {
-    if(!dragging) return;
-    targetRotY += (e.touches[0].clientX - lastX) * 0.008;
-    targetRotX = Math.max(0.1, Math.min(0.5, targetRotX + (e.touches[0].clientY - lastY) * 0.005));
-    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-  }, {passive:true});
-  window.addEventListener('touchend', () => { dragging = false; });
-
-  document.getElementById('zoom-in').addEventListener('click', () => { cameraDistance = Math.max(minZoom, cameraDistance - 2); });
-  document.getElementById('zoom-out').addEventListener('click', () => { cameraDistance = Math.min(maxZoom, cameraDistance + 2); });
-
-  function animate(){
-    requestAnimationFrame(animate);
-    if(!dragging) targetRotY += 0.002;
-    currentRotX += (targetRotX - currentRotX) * 0.1;
-    currentRotY += (targetRotY - currentRotY) * 0.1;
-    root.rotation.x = currentRotX;
-    root.rotation.y = currentRotY;
-    camera.position.set(0, 6, cameraDistance);
-    camera.lookAt(0, 0, 0);
-    renderer.render(scene, camera);
-  }
-  animate();
-})();
-
-(function(){
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });
-  }, {threshold:0.1});
-  document.querySelectorAll('.wrap').forEach(el => io.observe(el));
 })();
 </script>
 </body>
 </html>
+
