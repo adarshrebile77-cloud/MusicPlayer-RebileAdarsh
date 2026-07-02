@@ -1,0 +1,7 @@
+| Control | Pin | Type | Function |
+|---------|-----|------|----------|
+| Touch 1 | D2 | TTP223 Touch Sensor | Play / Pause toggle |
+| Touch 2 | D3 | TTP223 Touch Sensor | Next track |
+| Button 1 | D4 | Push Button | Previous track |
+| Button 2 | D5 | Push Button | Shuffle on/off |
+| Button 3 | D6 | Push Button | Repeat on/off |
